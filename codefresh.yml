@@ -13,7 +13,7 @@ steps:
     registry: dockerhub
     tag: ${{CF_BRANCH_TAG_NORMALIZED}}
 
-   push-latest:
+  push-latest:
     type: push
     candidate: ${{build}}
     registry: dockerhub
