@@ -128,9 +128,14 @@ func main() {
 	// usage
 	usage := func(msg string) {
 		fmt.Fprintf(os.Stderr, "ERROR: "+msg+"\n\n")
-		fmt.Fprintf(os.Stderr, "Usage: %s --http-host music.example.com\n\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage: %s --http-host music.example.com --http-admin 'admin:$ecUrePas$0rd'\n\n", os.Args[0])
 		cli.PrintDefaults()
 		os.Exit(1)
+	}
+
+	// http admin
+	if httpAdmins == nil && reverseProxyAuthIP == "" {
+		usage("the --http-admin or the --reverseProxyAuthIP flag is required")
 	}
 
 	// http host
