@@ -31,7 +31,7 @@ var (
 	datadir                string
 	debug                  bool
 	httpAddr               string
-	httpAdmin              string
+	httpAdmins             arrayFlags
 	httpHost               string
 	httpPrefix             string
 	letsencrypt            bool
@@ -61,7 +61,7 @@ func init() {
 	cli.StringVar(&datadir, "data-dir", "/data", "data directory")
 	cli.BoolVar(&debug, "debug", false, "debug mode")
 	cli.StringVar(&httpAddr, "http-addr", ":80", "listen address")
-	cli.StringVar(&httpAdmin, "http-admin", "", "HTTP basic auth user/password for admin")
+	cli.Var(&httpAdmins, "http-admin", "HTTP basic auth user/password for admin.")
 	cli.StringVar(&httpHost, "http-host", "", "HTTP host")
 	cli.StringVar(&httpPrefix, "http-prefix", "/streamlist", "HTTP URL prefix (not actually supported yet!)")
 	cli.BoolVar(&letsencrypt, "letsencrypt", false, "enable TLS using Let's Encrypt")
@@ -327,4 +327,15 @@ func (l tcpKeepAliveListener) Accept() (c net.Conn, err error) {
 	tc.SetKeepAlive(true)
 	tc.SetKeepAlivePeriod(10 * time.Minute)
 	return tc, nil
+}
+
+type arrayFlags []string
+
+func (i *arrayFlags) String() string {
+	return "my string representation"
+}
+
+func (i *arrayFlags) Set(value string) error {
+	*i = append(*i, value)
+	return nil
 }
