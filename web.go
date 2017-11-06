@@ -122,9 +122,13 @@ func Auth(h httprouter.Handle, optional bool) httprouter.Handle {
 		user := ""
 
 		// Method: Basic Auth (if we're not behind a reverse proxy, use basic auth)
-		if authsecret != nil {
+		if httpAdmin != "" {
+			split := strings.Split(httpAdmin, ":")
+			httpUsername := split[0]
+			httpPassword := split[1]
 			user, password, _ := r.BasicAuth()
-			if user == httpUsername && password == authsecret.Get() {
+			//if user == httpUsername && password == authsecret.Get() {
+			if user == httpUsername && password == httpPassword {
 				ps = append(ps, httprouter.Param{Key: "user", Value: user})
 				h(w, r, ps)
 				return

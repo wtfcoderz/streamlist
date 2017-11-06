@@ -31,9 +31,9 @@ var (
 	datadir                string
 	debug                  bool
 	httpAddr               string
+	httpAdmin              string
 	httpHost               string
 	httpPrefix             string
-	httpUsername           string
 	letsencrypt            bool
 	reverseProxyAuthHeader string
 	reverseProxyAuthIP     string
@@ -49,9 +49,6 @@ var (
 	// archiver
 	archive *archiver.Archiver
 
-	// secrets
-	authsecret *Secret
-
 	// config
 	config *Config
 
@@ -64,8 +61,8 @@ func init() {
 	cli.StringVar(&datadir, "data-dir", "/data", "data directory")
 	cli.BoolVar(&debug, "debug", false, "debug mode")
 	cli.StringVar(&httpAddr, "http-addr", ":80", "listen address")
+	cli.StringVar(&httpAdmin, "http-admin", "", "HTTP basic auth user/password for admin")
 	cli.StringVar(&httpHost, "http-host", "", "HTTP host")
-	cli.StringVar(&httpUsername, "http-username", "streamlist", "HTTP basic auth username")
 	cli.StringVar(&httpPrefix, "http-prefix", "/streamlist", "HTTP URL prefix (not actually supported yet!)")
 	cli.BoolVar(&letsencrypt, "letsencrypt", false, "enable TLS using Let's Encrypt")
 	cli.StringVar(&reverseProxyAuthHeader, "reverse-proxy-header", "X-Authenticated-User", "reverse proxy auth header")
@@ -146,11 +143,6 @@ func main() {
 	httpIP, httpPort, err := net.SplitHostPort(httpAddr)
 	if err != nil {
 		usage("invalid --http-addr")
-	}
-
-	// auth secret is the password for basic auth
-	if reverseProxyAuthIP == "" {
-		authsecret = NewSecret(filepath.Join(datadir, ".authsecret"))
 	}
 
 	//
@@ -238,9 +230,6 @@ func main() {
 			Path:   httpPrefix + "/",
 		})
 
-		if authsecret != nil {
-			logger.Infof("Login credentials:  %s  /  %s", httpUsername, authsecret.Get())
-		}
 		logger.Fatal(plain.ListenAndServe())
 	}
 
@@ -323,7 +312,6 @@ func main() {
 		Host:   hostport,
 		Path:   httpPrefix + "/",
 	})
-	logger.Infof("Login credentials:  %s  /  %s", httpUsername, authsecret.Get())
 	logger.Fatal(secure.Serve(tlsListener))
 }
 
