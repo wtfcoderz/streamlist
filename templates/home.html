@@ -24,8 +24,10 @@
                             {{with $tl := $list.TotalLength}}
                                 {{duration $tl}}
                             {{end}}
-                            &nbsp;&nbsp;
-                            <a href="/streamlist/edit/{{$list.ID}}"><i class="setting icon"></i></a>
+                            {{if $.IsAdmin}}
+                              &nbsp;&nbsp;
+                              <a href="/streamlist/edit/{{$list.ID}}"><i class="setting icon"></i></a>
+                            {{end}}
                         </td>
                     </tr>
                 {{end}}
