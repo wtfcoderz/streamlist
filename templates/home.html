@@ -1,7 +1,9 @@
 {{template "header.html" .}}
 
 <div class="ui container">
-    <a class="ui right floated blue labeled icon button" href="/streamlist/create"><i class="plus icon"></i>New Playlist</a>
+    {{if $.IsAdmin}}
+      <a class="ui right floated blue labeled icon button" href="/streamlist/create"><i class="plus icon"></i>New Playlist</a>
+    {{end}}
     <div class="ui hidden clearing divider"></div>
     <h2 class="ui header">Playlists</h2>
 
