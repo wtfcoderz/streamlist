@@ -221,7 +221,7 @@ func main() {
 	r.GET(Prefix("/v1/status"), Log(auth(v1status, "none")))
 
 	// Assets
-	r.GET(Prefix("/static/*path"), auth(staticAsset, "none")) // TODO: auth() but by checking Origin/Referer for a valid playlist ID?
+	r.GET(Prefix("/static/*path"), auth(staticAsset, "none"))
 	r.GET(Prefix("/logo.png"), Log(auth(logo, "none")))
 
 	//
