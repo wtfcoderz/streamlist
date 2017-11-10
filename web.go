@@ -117,7 +117,7 @@ func Log(h httprouter.Handle) httprouter.Handle {
 	}
 }
 
-func Auth(h httprouter.Handle, role string) httprouter.Handle {
+func auth(h httprouter.Handle, role string) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		user := ""
 

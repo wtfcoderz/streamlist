@@ -174,55 +174,55 @@ func main() {
 	r.HandleMethodNotAllowed = false
 
 	// Handlers
-	r.GET("/", Log(Auth(index, "readonly")))
-	r.GET(Prefix("/logs"), Log(Auth(logs, "admin")))
-	r.GET(Prefix("/"), Log(Auth(home, "readonly")))
+	r.GET("/", Log(auth(index, "readonly")))
+	r.GET(Prefix("/logs"), Log(auth(logs, "admin")))
+	r.GET(Prefix("/"), Log(auth(home, "readonly")))
 
 	// Library
-	r.GET(Prefix("/library"), Log(Auth(library, "readonly")))
+	r.GET(Prefix("/library"), Log(auth(library, "readonly")))
 
 	// Media
-	r.GET(Prefix("/media/thumbnail/:media"), Log(Auth(thumbnailMedia, "readonly")))
-	r.GET(Prefix("/media/view/:media"), Log(Auth(viewMedia, "readonly")))
-	r.GET(Prefix("/media/delete/:media"), Log(Auth(deleteMedia, "admin")))
-	r.GET(Prefix("/media/access/:filename"), Auth(streamMedia, "readonly"))
-	r.GET(Prefix("/media/download/:filename"), Auth(downloadMedia, "readonly"))
+	r.GET(Prefix("/media/thumbnail/:media"), Log(auth(thumbnailMedia, "readonly")))
+	r.GET(Prefix("/media/view/:media"), Log(auth(viewMedia, "readonly")))
+	r.GET(Prefix("/media/delete/:media"), Log(auth(deleteMedia, "admin")))
+	r.GET(Prefix("/media/access/:filename"), auth(streamMedia, "readonly"))
+	r.GET(Prefix("/media/download/:filename"), auth(downloadMedia, "readonly"))
 
 	// Publicly accessible streaming (using playlist id as "auth")
-	r.GET(Prefix("/stream/:list/:filename"), Auth(streamMedia, "none"))
+	r.GET(Prefix("/stream/:list/:filename"), auth(streamMedia, "none"))
 
 	// Import
-	r.GET(Prefix("/import"), Log(Auth(importHandler, "admin")))
+	r.GET(Prefix("/import"), Log(auth(importHandler, "admin")))
 
 	// Archiver
-	r.GET(Prefix("/archiver/jobs"), Auth(archiverJobs, "admin"))
-	r.POST(Prefix("/archiver/save/:id"), Log(Auth(archiverSave, "admin")))
-	r.GET(Prefix("/archiver/cancel/:id"), Log(Auth(archiverCancel, "admin")))
+	r.GET(Prefix("/archiver/jobs"), auth(archiverJobs, "admin"))
+	r.POST(Prefix("/archiver/save/:id"), Log(auth(archiverSave, "admin")))
+	r.GET(Prefix("/archiver/cancel/:id"), Log(auth(archiverCancel, "admin")))
 
 	// List
-	r.GET(Prefix("/create"), Log(Auth(createList, "admin")))
-	r.POST(Prefix("/create"), Log(Auth(createList, "admin")))
-	r.POST(Prefix("/add/:list/:media"), Log(Auth(addMediaList, "admin")))
-	r.POST(Prefix("/remove/:list/:media"), Log(Auth(removeMediaList, "admin")))
-	r.GET(Prefix("/remove/:list/:media"), Log(Auth(removeMediaList, "admin")))
+	r.GET(Prefix("/create"), Log(auth(createList, "admin")))
+	r.POST(Prefix("/create"), Log(auth(createList, "admin")))
+	r.POST(Prefix("/add/:list/:media"), Log(auth(addMediaList, "admin")))
+	r.POST(Prefix("/remove/:list/:media"), Log(auth(removeMediaList, "admin")))
+	r.GET(Prefix("/remove/:list/:media"), Log(auth(removeMediaList, "admin")))
 
-	r.GET(Prefix("/edit/:id"), Log(Auth(editList, "admin")))
-	r.POST(Prefix("/edit/:id"), Log(Auth(editList, "admin")))
-	r.GET(Prefix("/shuffle/:id"), Log(Auth(shuffleList, "admin")))
-	r.GET(Prefix("/play/:id"), Log(Auth(playList, "none")))
-	r.GET(Prefix("/m3u/:id"), Log(Auth(m3uList, "none")))
-	r.GET(Prefix("/podcast/:id"), Log(Auth(podcastList, "none")))
+	r.GET(Prefix("/edit/:id"), Log(auth(editList, "admin")))
+	r.POST(Prefix("/edit/:id"), Log(auth(editList, "admin")))
+	r.GET(Prefix("/shuffle/:id"), Log(auth(shuffleList, "admin")))
+	r.GET(Prefix("/play/:id"), Log(auth(playList, "none")))
+	r.GET(Prefix("/m3u/:id"), Log(auth(m3uList, "none")))
+	r.GET(Prefix("/podcast/:id"), Log(auth(podcastList, "none")))
 
-	r.POST(Prefix("/config"), Log(Auth(configHandler, "admin")))
+	r.POST(Prefix("/config"), Log(auth(configHandler, "admin")))
 
-	r.GET(Prefix("/delete/:id"), Log(Auth(deleteList, "admin")))
+	r.GET(Prefix("/delete/:id"), Log(auth(deleteList, "admin")))
 
 	// API
-	r.GET(Prefix("/v1/status"), Log(Auth(v1status, "none")))
+	r.GET(Prefix("/v1/status"), Log(auth(v1status, "none")))
 
 	// Assets
-	r.GET(Prefix("/static/*path"), Auth(staticAsset, "none")) // TODO: Auth() but by checking Origin/Referer for a valid playlist ID?
-	r.GET(Prefix("/logo.png"), Log(Auth(logo, "none")))
+	r.GET(Prefix("/static/*path"), auth(staticAsset, "none")) // TODO: auth() but by checking Origin/Referer for a valid playlist ID?
+	r.GET(Prefix("/logo.png"), Log(auth(logo, "none")))
 
 	//
 	// Server
