@@ -21,10 +21,10 @@ import (
 )
 
 var (
-	HTTPUserAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
+	httpUserAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36"
 )
 
-type Job struct {
+type job struct {
 	id      string
 	source  string
 	context *context.Context
@@ -35,11 +35,12 @@ type Job struct {
 	audiofile string
 }
 
+// Return a new Archiver
 func NewArchiver(datadir string, concurrency int, logger *zap.SugaredLogger) *Archiver {
 	a := &Archiver{
 		datadir:     datadir,
 		concurrency: concurrency,
-		active:      make(map[string]*Job),
+		active:      make(map[string]*job),
 		failed:      make(map[string]error),
 		logger:      logger,
 	}
@@ -51,8 +52,8 @@ type Archiver struct {
 	mu          sync.RWMutex
 	datadir     string
 	concurrency int
-	queue       []*Job
-	active      map[string]*Job
+	queue       []*job
+	active      map[string]*job
 	failed      map[string]error
 	logger      *zap.SugaredLogger
 	debug       bool
@@ -165,9 +166,9 @@ func (a *Archiver) runlock(loc string) {
 	a.mu.RUnlock()
 }
 
-func (a *Archiver) newJob(id, source string) *Job {
+func (a *Archiver) newJob(id, source string) *job {
 	ctx, cancel := context.WithCancel(context.Background())
-	return &Job{
+	return &job{
 		id:        id,
 		source:    source,
 		context:   &ctx,
@@ -210,7 +211,7 @@ func (a *Archiver) manager() {
 	}
 }
 
-func (a *Archiver) archive(job *Job) {
+func (a *Archiver) archive(job *job) {
 	var failed error
 
 	// Clean up on completion.
@@ -268,7 +269,7 @@ func (a *Archiver) download(ctx context.Context, rawurl, filename string) error 
 	if err != nil {
 		return err
 	}
-	req.Header.Set("User-Agent", HTTPUserAgent)
+	req.Header.Set("User-Agent", httpUserAgent)
 	req = req.WithContext(ctx)
 
 	res, err := http.DefaultClient.Do(req)

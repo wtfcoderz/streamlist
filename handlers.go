@@ -19,7 +19,7 @@ import (
 	"github.com/rylio/ytdl"
 )
 
-type Response struct {
+type response struct {
 	Config   Config
 	Request  *http.Request
 	Params   *httprouter.Params
@@ -64,14 +64,14 @@ func stringInSlice(a string, list []string) bool {
 	return false
 }
 
-func NewResponse(r *http.Request, ps httprouter.Params) *Response {
+func newResponse(r *http.Request, ps httprouter.Params) *response {
 	diskInfo, err := NewDiskInfo(datadir)
 	if err != nil {
 		panic(err)
 	}
 	user, _, _ := r.BasicAuth()
 	isAdmin := stringInSlice(user, httpAdminUsers)
-	return &Response{
+	return &response{
 		Config:   config.Get(),
 		Request:  r,
 		Params:   &ps,
@@ -102,7 +102,7 @@ func home(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		Error(w, err)
 		return
 	}
-	res := NewResponse(r, ps)
+	res := newResponse(r, ps)
 	res.Section = "home"
 	res.Lists = lists
 	HTML(w, "home.html", res)
@@ -150,7 +150,7 @@ func importHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	}
 	youtubes = filtered
 
-	res := NewResponse(r, ps)
+	res := newResponse(r, ps)
 	res.Section = "import"
 	res.Youtubes = youtubes
 	HTML(w, "import.html", res)
@@ -221,7 +221,7 @@ func library(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 
-	res := NewResponse(r, ps)
+	res := newResponse(r, ps)
 	res.Section = "library"
 	res.Medias = medias[begin:end]
 	res.Lists = lists
@@ -269,7 +269,7 @@ func viewMedia(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 
-	res := NewResponse(r, ps)
+	res := newResponse(r, ps)
 	res.Media = media
 	res.Section = "library"
 	res.Section = "view"
@@ -309,7 +309,7 @@ func streamMedia(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 //
 
 func archiverJobs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	res := NewResponse(r, ps)
+	res := newResponse(r, ps)
 	res.ActiveMedias = ActiveMedias()
 	res.QueuedMedias = QueuedMedias()
 	HTML(w, "jobs.html", res)
@@ -429,7 +429,7 @@ func playList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 
-	res := NewResponse(r, ps)
+	res := newResponse(r, ps)
 	res.Section = "play"
 	res.List = list
 	HTML(w, "play.html", res)
@@ -437,7 +437,7 @@ func playList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 func createList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	if r.Method == "GET" {
-		res := NewResponse(r, ps)
+		res := newResponse(r, ps)
 		res.Section = "create"
 		HTML(w, "create.html", res)
 		return
@@ -514,7 +514,7 @@ func editList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 
-	res := NewResponse(r, ps)
+	res := newResponse(r, ps)
 	res.Section = "edit"
 	res.List = list
 	HTML(w, "edit.html", res)
