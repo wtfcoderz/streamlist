@@ -324,7 +324,8 @@ func (l *List) save() error {
 	return overwrite(l.file(), b, 0644)
 }
 
-func (l *List) hasMedia(media *Media) bool {
+// HasMedia ...
+func (l *List) HasMedia(media *Media) bool {
 	for _, m := range l.Medias {
 		if m.ID == media.ID {
 			return true
@@ -333,7 +334,8 @@ func (l *List) hasMedia(media *Media) bool {
 	return false
 }
 
-func (l *List) totalLength() (total int64) {
+// TotalLength ...
+func (l *List) TotalLength() (total int64) {
 	for _, m := range l.Medias {
 		total += m.Length
 	}
@@ -356,7 +358,7 @@ func (l *List) addMedia(media *Media) error {
 }
 
 func (l *List) removeMedia(media *Media) error {
-	if !l.hasMedia(media) {
+	if !l.HasMedia(media) {
 		return nil
 	}
 	var medias []*Media
