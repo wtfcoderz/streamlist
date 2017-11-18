@@ -18,20 +18,20 @@
         <script src="/streamlist/static/semantic/semantic.min.js"></script>
     </head>
     <body>
-        {{if $.User}}
-            <div class="navmenu ui secondary menu">
-                {{if $.Backlink}}
-                    {{if eq $.Section "play"}}
-                        <a class="item" href="/streamlist/"><i class="chevron left icon"></i></a>
-                    {{else if eq $.Section "view"}}
-                        <a class="item" href="/streamlist/library"><i class="chevron left icon"></i></a>
-                    {{else}}
-                        <a class="item" href="{{.Backlink}}"><i class="chevron left icon"></i></a>
-                    {{end}}
+        <div class="navmenu ui secondary menu">
+            {{if $.Backlink}}
+                {{if eq $.Section "play"}}
+                    <a class="item" href="/streamlist/"><i class="chevron left icon"></i></a>
+                {{else if eq $.Section "view"}}
+                    <a class="item" href="/streamlist/library"><i class="chevron left icon"></i></a>
+                {{else}}
+                    <a class="item" href="{{.Backlink}}"><i class="chevron left icon"></i></a>
                 {{end}}
-                <a class="item" href="/streamlist/">
-                    <img src="/streamlist/static/logo.png">
-                </a>
+            {{end}}
+            <a class="item" href="/streamlist/">
+                <img src="/streamlist/static/logo.png">
+            </a>
+            {{if $.User}}
                 <a class="item {{if eq $.Section "home" "edit"}}active{{end}}" href="/streamlist/">
                     Playlists
                 </a>
@@ -43,8 +43,8 @@
                       Import
                   </a>
                 {{end}}
-            </div>
-        {{end}}
+            {{end}}
+        </div>
 
         {{with $message := $.Request.FormValue "message"}}
             <div class="ui container">

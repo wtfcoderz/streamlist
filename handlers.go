@@ -156,6 +156,21 @@ func importHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	html(w, "import.html", res)
 }
 
+func loginPage(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	res := newResponse(r, ps)
+	html(w, "login.html", res)
+}
+
+func login(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+        user := r.FormValue("user")
+        password := r.FormValue("password")
+        if user == "admin" && password == "admin" {
+                redirect(w, r, "/")
+        } else {
+                redirect(w, r, "/login")
+        }
+}
+
 func library(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	medias, err := ListMedias()
 	if err != nil {

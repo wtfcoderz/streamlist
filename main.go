@@ -178,6 +178,10 @@ func main() {
 	r.GET(prefix("/logs"), log(auth(logs, "admin")))
 	r.GET(prefix("/"), log(auth(home, "readonly")))
 
+        // Login
+        r.GET(prefix("/login"), log(auth(loginPage, "none")))
+        r.POST(prefix("/login"), log(auth(login, "none")))
+
 	// Library
 	r.GET(prefix("/library"), log(auth(library, "readonly")))
 
