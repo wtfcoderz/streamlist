@@ -96,6 +96,13 @@ func index(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	redirect(w, r, "/")
 }
 
+func createUser(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	// Create a user
+        u1 := User{Username: "admin", Password: "admin"}
+        db.Create(&u1)
+	fmt.Fprintln(w, "user created")
+}
+
 func home(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	lists, err := listLists()
 	if err != nil {

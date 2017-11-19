@@ -60,6 +60,7 @@ var (
 )
 
 func init() {
+	dbInit()
 	cli.StringVar(&backlink, "backlink", "", "backlink (optional)")
 	cli.StringVar(&datadir, "data-dir", "/data", "data directory")
 	cli.BoolVar(&debug, "debug", false, "debug mode")
@@ -177,6 +178,9 @@ func main() {
 	r.GET("/", log(auth(index, "readonly")))
 	r.GET(prefix("/logs"), log(auth(logs, "admin")))
 	r.GET(prefix("/"), log(auth(home, "readonly")))
+
+	// User
+	r.GET(prefix("/user/create"), log(auth(createUser, "none")))
 
 	// Library
 	r.GET(prefix("/library"), log(auth(library, "readonly")))
