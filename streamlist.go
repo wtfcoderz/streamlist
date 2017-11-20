@@ -199,12 +199,9 @@ func FindMedia(id string) (*Media, error) {
 
 // LoadMedia reads media file
 func loadMedia(id string) (*Media, error) {
-	b, err := ioutil.ReadFile(mediaFile(id))
-	if err != nil {
-		return nil, err
-	}
 	var media Media
-	return &media, json.Unmarshal(b, &media)
+	db.First(&media, "ID = ?", id)
+	return &media, db.Error
 }
 
 // ListMedias list medias in library
@@ -217,16 +214,10 @@ func ListMedias() ([]*Media, error) {
 		return files[j].ModTime().Before(files[i].ModTime())
 	})
 
+	var mediasBDD []*Media
 	var medias []*Media
-	for _, f := range files {
-		if !strings.HasSuffix(f.Name(), ".media") {
-			continue
-		}
-		// media must exist.
-		m, err := loadMedia(strings.TrimSuffix(f.Name(), ".media"))
-		if err != nil {
-			return nil, err
-		}
+	db.Find(&mediasBDD)
+        for _, m := range mediasBDD {
 		// must have an image file.
 		if !m.hasImage() {
 			continue
@@ -241,11 +232,7 @@ func ListMedias() ([]*Media, error) {
 }
 
 func (m Media) save() error {
-	b, err := json.MarshalIndent(m, "", "    ")
-	if err != nil {
-		return err
-	}
-	return overwrite(m.file(), b, 0644)
+	return db.Create(&m).Error
 }
 
 func (m Media) file() string {
