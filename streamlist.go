@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
+	//"strings"
 	"sync"
 	"time"
 )
@@ -303,12 +303,9 @@ func (l *List) file() string {
 }
 
 func (l *List) save() error {
-	b, err := json.MarshalIndent(l, "", "    ")
-	if err != nil {
-		return err
-	}
 	l.Modified = time.Now()
-	return overwrite(l.file(), b, 0644)
+	db.Create(&l)
+	return db.Error
 }
 
 // HasMedia ...
@@ -369,7 +366,7 @@ func findList(id string) (*List, error) {
 }
 
 func listLists() ([]*List, error) {
-	files, err := ioutil.ReadDir(datadir)
+	/*files, err := ioutil.ReadDir(datadir)
 	if err != nil {
 		return nil, err
 	}
@@ -391,5 +388,8 @@ func listLists() ([]*List, error) {
 	sort.Slice(lists, func(i, j int) bool {
 		return lists[j].Created.Before(lists[i].Created)
 	})
-	return lists, nil
+	return lists, nil*/
+	var lists []*List
+	db.Find(&lists)
+	return lists, db.Error
 }

@@ -23,4 +23,5 @@ func dbInit() {
 
 	db.AutoMigrate(&User{})
 	db.AutoMigrate(&Media{})
+	db.AutoMigrate(&List{})
 }
