@@ -5,5 +5,4 @@
           url('fonts/Roboto-Light.woff') format('woff'), /* Pretty Modern Browsers */
 	  url('fonts/Roboto-Light.ttf') format('truetype'); /* Safari, Android, iOS */
     font-weight: 400;
-    font-style: normal;
 }
