@@ -2,7 +2,7 @@
 engines:
   csslint:
     enabled: true
-      checks:
+    checks:
       important:
         enabled: false
       regex-selectors:
