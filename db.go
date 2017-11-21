@@ -11,11 +11,11 @@ import (
 )
 
 // User ...
-type User struct {
+/*type User struct {
 	ID       uint
 	Username string
 	Password string
-}
+}*/
 
 var db *gorm.DB
 
@@ -32,7 +32,7 @@ func dbInit() {
 	}
 	//defer db.Close()
 	db.SingularTable(true)
-	db.AutoMigrate(&User{})
+	//db.AutoMigrate(&User{})
 	db.AutoMigrate(&Media{})
 	db.AutoMigrate(&List{})
 
