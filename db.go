@@ -20,7 +20,7 @@ func dbInit() {
 		panic("failed to connect database")
 	}
 	//defer db.Close()
-
+	db.SingularTable(true)
 	db.AutoMigrate(&User{})
 	db.AutoMigrate(&Media{})
 	db.AutoMigrate(&List{})

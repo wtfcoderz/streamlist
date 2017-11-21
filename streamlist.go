@@ -271,7 +271,7 @@ type List struct {
 	ID    string `json:"id"`
 	Title string `json:"title"`
 
-	Medias []*Media `json:"medias"`
+	Medias []*Media `json:"medias" gorm:"many2many:list_media"`
 
 	Modified time.Time `json:"modified"`
 	Created  time.Time `json:"created"`
@@ -304,26 +304,36 @@ func (l *List) file() string {
 
 func (l *List) save() error {
 	l.Modified = time.Now()
-	db.Create(&l)
+	db.Where(List{ID: l.ID}).Assign(&l).FirstOrCreate(&l)
 	return db.Error
 }
 
 // HasMedia ...
 func (l *List) HasMedia(media *Media) bool {
-	for _, m := range l.Medias {
+	var medias []Media
+	db.Model(&l).Related(&medias, "Medias")
+	for _, m := range medias {
 		if m.ID == media.ID {
-			return true
-		}
-	}
-	return false
+                        return true
+                }
+        }
+        return false
 }
 
 // TotalLength ...
 func (l *List) TotalLength() (total int64) {
-	for _, m := range l.Medias {
+	var medias []Media
+        db.Model(&l).Related(&medias, "Medias")
+	for _, m := range medias {
 		total += m.Length
 	}
 	return total
+}
+// MediasCount ...
+func (l *List) MediasCount() int {
+        var medias []Media
+        db.Model(&l).Related(&medias, "Medias")
+        return len(medias)
 }
 
 func (l *List) shuffleMedia() error {
@@ -345,24 +355,14 @@ func (l *List) removeMedia(media *Media) error {
 	if !l.HasMedia(media) {
 		return nil
 	}
-	var medias []*Media
-	for _, m := range l.Medias {
-		if m.ID == media.ID {
-			continue
-		}
-		medias = append(medias, m)
-	}
-	l.Medias = medias
-	return l.save()
+	db.Model(&l).Association("Medias").Delete(media)
+	return db.Error
 }
 
 func findList(id string) (*List, error) {
-	b, err := ioutil.ReadFile(listFile(id))
-	if err != nil {
-		return nil, err
-	}
 	var list List
-	return &list, json.Unmarshal(b, &list)
+	db.First(&list, "ID = ?", id)
+	return &list, db.Error
 }
 
 func listLists() ([]*List, error) {
