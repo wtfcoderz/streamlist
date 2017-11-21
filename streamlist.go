@@ -218,7 +218,7 @@ func ListMedias() ([]*Media, error) {
 
 	var mediasBDD []*Media
 	var medias []*Media
-	db.Find(&mediasBDD)
+	db.Order("modified desc").Find(&mediasBDD)
 	for _, m := range mediasBDD {
 		// must have an image file.
 		if !m.hasImage() {
