@@ -180,7 +180,7 @@ func main() {
 	r.GET(prefix("/"), log(auth(home, "readonly")))
 
 	// User
-	r.GET(prefix("/user/create"), log(auth(createUser, "none")))
+	//r.GET(prefix("/user/create"), log(auth(createUser, "none")))
 
 	// Library
 	r.GET(prefix("/library"), log(auth(library, "readonly")))

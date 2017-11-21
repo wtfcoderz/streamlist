@@ -16,7 +16,8 @@ RUN go get \
     go.uber.org/zap \
     golang.org/x/crypto/acme/autocert \
     github.com/jinzhu/gorm \
-    github.com/jinzhu/gorm/dialects/sqlite
+    github.com/jinzhu/gorm/dialects/sqlite \
+		github.com/go-sql-driver/mysql
 COPY *.go ./
 COPY internal ./internal
 COPY static ./static

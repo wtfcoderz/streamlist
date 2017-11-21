@@ -8,7 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
-	"sort"
+	//"sort"
 	//"strings"
 	"sync"
 	"time"
@@ -180,7 +180,9 @@ func DeleteList(id string) error {
 	if err != nil {
 		return err
 	}
-	return os.Remove(list.file())
+	db.Delete(&list)
+	return db.Error
+	//return os.Remove(list.file())
 }
 
 // FindMedia search media in library
@@ -206,13 +208,13 @@ func loadMedia(id string) (*Media, error) {
 
 // ListMedias list medias in library
 func ListMedias() ([]*Media, error) {
-	files, err := ioutil.ReadDir(datadir)
+	/*files, err := ioutil.ReadDir(datadir)
 	if err != nil {
 		return nil, err
 	}
 	sort.Slice(files, func(i, j int) bool {
 		return files[j].ModTime().Before(files[i].ModTime())
-	})
+	})*/
 
 	var mediasBDD []*Media
 	var medias []*Media
@@ -223,7 +225,7 @@ func ListMedias() ([]*Media, error) {
 			continue
 		}
 		// must have an audio file (otherwise it's not finished transcoding)
-		if !m.hasAudio() {
+		if !m.HasAudio() {
 			continue
 		}
 		medias = append(medias, m)
@@ -261,7 +263,8 @@ func (m Media) hasVideo() bool {
 	return err == nil
 }
 
-func (m Media) hasAudio() bool {
+// HasAudio ...
+func (m Media) HasAudio() bool {
 	_, err := os.Stat(m.audioFile())
 	return err == nil
 }
@@ -271,7 +274,7 @@ type List struct {
 	ID    string `json:"id"`
 	Title string `json:"title"`
 
-	Medias []*Media `json:"medias" gorm:"many2many:list_media"`
+	Medias []*Media `json:"medias" gorm:"many2many:list_media;AssociationForeignKey:ID;ForeignKey:ID"`
 
 	Modified time.Time `json:"modified"`
 	Created  time.Time `json:"created"`
