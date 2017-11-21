@@ -314,26 +314,27 @@ func (l *List) HasMedia(media *Media) bool {
 	db.Model(&l).Related(&medias, "Medias")
 	for _, m := range medias {
 		if m.ID == media.ID {
-                        return true
-                }
-        }
-        return false
+			return true
+		}
+	}
+	return false
 }
 
 // TotalLength ...
 func (l *List) TotalLength() (total int64) {
 	var medias []Media
-        db.Model(&l).Related(&medias, "Medias")
+	db.Model(&l).Related(&medias, "Medias")
 	for _, m := range medias {
 		total += m.Length
 	}
 	return total
 }
+
 // MediasCount ...
 func (l *List) MediasCount() int {
-        var medias []Media
-        db.Model(&l).Related(&medias, "Medias")
-        return len(medias)
+	var medias []Media
+	db.Model(&l).Related(&medias, "Medias")
+	return len(medias)
 }
 
 func (l *List) shuffleMedia() error {

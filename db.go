@@ -5,6 +5,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
+// User ...
 type User struct {
 	ID       uint
 	Username string
