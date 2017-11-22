@@ -79,9 +79,9 @@ func (c *Config) Save() error {
 
 // User ...
 type User struct {
-        ID       uint
-        Username string
-        Password string
+	ID       uint
+	Username string
+	Password string
 	Role     string
 }
 

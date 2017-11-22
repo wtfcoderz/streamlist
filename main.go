@@ -96,7 +96,7 @@ func main() {
 		httpUsername := split[0]
 		httpUserPassword := split[1]
 		hasher := sha512.New()
-                hasher.Write([]byte(httpUserPassword))
+		hasher.Write([]byte(httpUserPassword))
 		var user User
 		db.Where(User{Username: httpUsername}).Assign(User{Password: hex.EncodeToString(hasher.Sum(nil)), Role: "readonly"}).FirstOrCreate(&user)
 	}

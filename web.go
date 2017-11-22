@@ -137,11 +137,11 @@ func auth(h httprouter.Handle, role string) httprouter.Handle {
 			var count int
 			db.Where("username = ?", user).First(&userBDD).Count(&count)
 			// Get Hash password
-	                hasher := sha512.New()
+			hasher := sha512.New()
 			hasher.Write([]byte(password))
 			if count == 1 && userBDD.Password == hex.EncodeToString(hasher.Sum(nil)) && (userBDD.Role == "admin" || userBDD.Role == role) {
 				ps = append(ps, httprouter.Param{Key: "user", Value: user})
-                                h(w, r, ps)
+				h(w, r, ps)
 				return
 			}
 			// Else query for auth
