@@ -77,6 +77,14 @@ func (c *Config) Save() error {
 	return overwrite(c.filename, b, 0644)
 }
 
+// User ...
+type User struct {
+        ID       uint
+        Username string
+        Password string
+	Role     string
+}
+
 // Media represent a media in the library
 type Media struct {
 	ID          string    `json:"id"`
