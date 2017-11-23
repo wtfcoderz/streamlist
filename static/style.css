@@ -12,8 +12,14 @@ video {
     border-radius: 3px;
 }
 
-.full.height {
-    min-height: 100%;
+.site {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+.full.height{
+    flex:1;
 }
 
 .truncate {
@@ -38,6 +44,27 @@ video {
 
 .float-left {
     float: left;
+}
+
+.contact-links {
+    text-align: center; 
+    margin: 0 3%; 
+    z-index: 3; 
+    padding: 0; 
+    height: 32px; 
+    width: 100%;
+}
+.contact-link {
+    display: inline; 
+    list-style-type: none;
+}
+
+.contact-link i, .license {
+    color: #fff;
+}
+
+.version {
+    color: #fff;
 }
 
 #playerbox {
