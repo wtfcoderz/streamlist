@@ -58,6 +58,9 @@ var (
 
 	// version
 	version string
+
+	// others global vars
+	lastfmApiKey string
 )
 
 func init() {
@@ -73,6 +76,7 @@ func init() {
 	cli.BoolVar(&letsencrypt, "letsencrypt", false, "enable TLS using Let's Encrypt")
 	cli.StringVar(&reverseProxyAuthHeader, "reverse-proxy-header", "X-Authenticated-User", "reverse proxy auth header")
 	cli.StringVar(&reverseProxyAuthIP, "reverse-proxy-ip", "", "reverse proxy auth IP")
+	lastfmApiKey = os.Getenv("LASTFM_API_KEY")
 }
 
 func main() {
@@ -234,6 +238,10 @@ func main() {
 
 	// API
 	r.GET(prefix("/v1/status"), log(auth(v1status, "none")))
+	r.GET(prefix("/v1/lastfm/search/artist/:artist"), log(auth(v1LastFMSearchArtist, "admin")))
+	r.GET(prefix("/v1/lastfm/artist/:artist"), log(auth(v1LastFMArtist, "admin")))
+	r.GET(prefix("/v1/lastfm/artist/:artist/similar"), log(auth(v1LastFMArtistSimilar, "admin")))
+	r.GET(prefix("/v1/lastfm/artist/:artist/tags"), log(auth(v1LastFMArtistTags, "admin")))
 
 	// Assets
 	r.GET(prefix("/static/*path"), auth(staticAsset, "none"))

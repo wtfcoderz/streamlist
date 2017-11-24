@@ -2,17 +2,22 @@ package main
 
 import (
 	"bytes"
+	//"encoding/json"
 	"fmt"
+	"io/ioutil"
+	golog "log"
 	"net"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/streamlist/streamlist/internal/archiver"
 	"github.com/streamlist/streamlist/internal/youtube"
 
+	"github.com/Jeffail/gabs"
 	"github.com/disintegration/imaging"
 	"github.com/eduncan911/podcast"
 	"github.com/julienschmidt/httprouter"
@@ -573,4 +578,74 @@ func v1status(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	fmt.Fprintf(w, "%s\n", status)
+}
+
+func getUrl(url string) []byte {
+	fmt.Println("I GET:" + url)
+	client := &http.Client{
+		Timeout: time.Second * 2, // Maximum of 2 secs
+	}
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		golog.Fatal(err)
+	}
+	req.Header.Set("User-Agent", "streamlist")
+	res, getErr := client.Do(req)
+	if getErr != nil {
+		golog.Fatal(getErr)
+	}
+	defer res.Body.Close()
+	body, readErr := ioutil.ReadAll(res.Body)
+	if readErr != nil {
+		golog.Fatal(readErr)
+	}
+	return body
+}
+
+func v1LastFMSearchArtist(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	url := "http://ws.audioscrobbler.com/2.0/?method=artist.search&artist=" + ps.ByName("artist") + "&api_key=" + lastfmApiKey + "&format=json"
+	/*client := &http.Client{
+		Timeout: time.Second * 2, // Maximum of 2 secs
+	}
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		golog.Fatal(err)
+	}
+	req.Header.Set("User-Agent", "streamlist")
+	res, getErr := client.Do(req)
+	if getErr != nil {
+		golog.Fatal(getErr)
+	}
+	defer res.Body.Close()
+	body, readErr := ioutil.ReadAll(res.Body)
+	if readErr != nil {
+		golog.Fatal(readErr)
+	}*/
+	body := getUrl(url)
+	// Parse names
+	jsonParsed, _ := gabs.ParseJSON([]byte(body))
+	fmt.Fprintf(w, jsonParsed.Path("results.artistmatches.artist.name").String())
+}
+
+func v1LastFMArtist(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	url := "http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=" + ps.ByName("artist") + "&api_key=" + lastfmApiKey + "&format=json"
+	body := getUrl(url)
+	fmt.Fprintf(w, "%s", body)
+	// Parse names
+	//jsonParsed, _ := gabs.ParseJSON([]byte(body))
+	//fmt.Fprintf(w, jsonParsed.Path("results.artistmatches.artist.name").String())
+}
+
+func v1LastFMArtistSimilar(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	url := "http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=" + ps.ByName("artist") + "&api_key=" + lastfmApiKey + "&format=json"
+	body := getUrl(url)
+	jsonParsed, _ := gabs.ParseJSON([]byte(body))
+	fmt.Fprintf(w, jsonParsed.Path("artist.similar.artist.name").String())
+}
+
+func v1LastFMArtistTags(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	url := "http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=" + ps.ByName("artist") + "&api_key=" + lastfmApiKey + "&format=json"
+	body := getUrl(url)
+	jsonParsed, _ := gabs.ParseJSON([]byte(body))
+	fmt.Fprintf(w, jsonParsed.Path("artist.tags.tag.name").String())
 }
