@@ -213,6 +213,9 @@ func main() {
 	// Import
 	r.GET(prefix("/import"), log(auth(importHandler, "admin")))
 
+	// Search
+	r.GET(prefix("/search"), log(auth(searchHandler, "admin")))
+
 	// Archiver
 	r.GET(prefix("/archiver/jobs"), auth(archiverJobs, "admin"))
 	r.POST(prefix("/archiver/save/:id"), log(auth(archiverSave, "admin")))

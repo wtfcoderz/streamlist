@@ -2,7 +2,7 @@ package main
 
 import (
 	"bytes"
-	//"encoding/json"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	golog "log"
@@ -58,6 +58,9 @@ type response struct {
 	QueuedMedias []*Media
 
 	Youtubes []youtube.Video
+
+	ArtistsList []LastFMArtist
+	AlbumsList []LastFMAlbum
 }
 
 func stringInSlice(a string, list []string) bool {
@@ -166,6 +169,20 @@ func importHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	res.Section = "import"
 	res.Youtubes = youtubes
 	html(w, "import.html", res)
+}
+
+func searchHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	var artists []LastFMArtist
+	var albums []LastFMAlbum
+	if query := strings.TrimSpace(r.FormValue("q")); query != "" {
+		artists = searchArtists(query)
+		albums = searchAlbums(query)
+        }
+
+	res := newResponse(r, ps)
+	res.ArtistsList = artists
+	res.AlbumsList = albums
+	html(w, "search.html", res)
 }
 
 func library(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -602,38 +619,69 @@ func getUrl(url string) []byte {
 	return body
 }
 
+/*type LastFMArtist struct {
+	Name string `json:"name"`
+	Listeners string `json:"listeners"`
+	Image []LastFMImage `json:"image"`
+}
+
+type LastFMImage struct {
+	Text string `json:"#text"`
+	Size string `json:"size"`
+}*/
+
+type SemanticUIResponse struct {
+	Results []SemanticUIResponseItem `json:"results"`
+}
+
+type SemanticUIResponseItem struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+}
+
+func searchArtists(query string) []LastFMArtist {
+	url := "http://ws.audioscrobbler.com/2.0/?method=artist.search&artist=" + query + "&api_key=" + lastfmApiKey + "&format=json"
+	body := getUrl(url)
+
+	var result LastFMArtistsResponse
+        json.Unmarshal([]byte(body), &result)
+
+	return result.Results.ArtistMatches.Artist
+}
+
+func searchAlbums(query string) []LastFMAlbum {
+        url := "http://ws.audioscrobbler.com/2.0/?method=album.search&album=" + query + "&api_key=" + lastfmApiKey + "&format=json"
+        body := getUrl(url)
+
+        var result LastFMAlbumResponse
+        json.Unmarshal([]byte(body), &result)
+
+        return result.Results.AlbumMatches.Album
+}
+
 func v1LastFMSearchArtist(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	url := "http://ws.audioscrobbler.com/2.0/?method=artist.search&artist=" + ps.ByName("artist") + "&api_key=" + lastfmApiKey + "&format=json"
-	/*client := &http.Client{
-		Timeout: time.Second * 2, // Maximum of 2 secs
-	}
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		golog.Fatal(err)
-	}
-	req.Header.Set("User-Agent", "streamlist")
-	res, getErr := client.Do(req)
-	if getErr != nil {
-		golog.Fatal(getErr)
-	}
-	defer res.Body.Close()
-	body, readErr := ioutil.ReadAll(res.Body)
-	if readErr != nil {
-		golog.Fatal(readErr)
-	}*/
 	body := getUrl(url)
-	// Parse names
-	jsonParsed, _ := gabs.ParseJSON([]byte(body))
-	fmt.Fprintf(w, jsonParsed.Path("results.artistmatches.artist.name").String())
+
+	var result LastFMArtistsResponse
+	json.Unmarshal([]byte(body), &result)
+
+	var items []SemanticUIResponseItem
+	for _, artist := range result.Results.ArtistMatches.Artist {
+                item := SemanticUIResponseItem{Title: artist.Name, Description: artist.Listeners + " listeners"}
+                items = append(items, item)
+                fmt.Println(artist)
+        }
+
+	semUiResp := SemanticUIResponse{Results: items}
+	output, _ := json.Marshal(semUiResp)
+	fmt.Fprintf(w, "%s", output)
 }
 
 func v1LastFMArtist(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	url := "http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=" + ps.ByName("artist") + "&api_key=" + lastfmApiKey + "&format=json"
 	body := getUrl(url)
 	fmt.Fprintf(w, "%s", body)
-	// Parse names
-	//jsonParsed, _ := gabs.ParseJSON([]byte(body))
-	//fmt.Fprintf(w, jsonParsed.Path("results.artistmatches.artist.name").String())
 }
 
 func v1LastFMArtistSimilar(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

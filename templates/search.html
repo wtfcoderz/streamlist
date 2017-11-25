@@ -1,0 +1,83 @@
+{{template "header.html" .}}
+
+{{$query := $.Request.FormValue "q"}}
+
+<div class="ui container">
+    <h2 class="ui header">Import</h2>
+</div>
+
+<div class="ui hidden divider"></div>
+
+<div id="jobs" class="ui container">
+</div>
+
+<div class="ui hidden divider"></div>
+
+<div class="ui container">
+    <h3 class="ui header">Search for artists</h3>
+
+    <form class="ui large form" action="/streamlist/search" method="GET">
+        <div class="sixteen wide field">
+            <input type="text" name="q" placeholder="Search" value="{{$query}}" autofocus="autofocus" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        </div>
+        <!--div class="sixteen wide field">
+            <div class="ui hidden divider"></div>
+            <button type="submit" class="ui right floated blue button">Search</button>
+        </div-->
+    </form>
+
+    {{if $query}}
+        <div class="ui hidden divider"></div>
+        <h5 class="ui header">
+            Results for "{{$query}}"
+        </h5>
+
+	<div class="ui grid">
+	    <div class="height wide column">
+                <p>Artists</p>
+                {{if $.ArtistsList}}
+                <table class="ui compact fixed striped unstackable table">
+                    <tbody>
+                    {{range $artist := $.ArtistsList}}
+                        <tr>
+                            <td class="ten wide">
+                                <div class="truncate ui small header">
+                                    {{$artist.Name}}
+                                </div>
+                            </td>
+                        </tr>
+                    {{end}}
+                    </tbody>
+                </table>
+                {{end}}
+            </div>
+            <div class="height wide column">
+                <p>Albums</p>
+                {{if $.AlbumsList}}
+                <table class="ui compact fixed striped unstackable table">
+                    <tbody>
+                    {{range $album := $.AlbumsList}}
+                        <tr>
+                            <td class="ten wide">
+                                <div class="truncate ui small header">
+                                    {{$album.Artist}} - {{$album.Name}}
+                                </div>
+                            </td>
+                        </tr>
+                    {{end}}
+                    </tbody>
+                </table>
+                {{end}}
+            </div>
+        </div>
+    {{end}}
+</div>
+
+<script>
+    $(document).ready(function() {
+        poller('#jobs', '/streamlist/archiver/jobs', 2000);
+    });
+</script>
+
+
+{{template "footer.html" .}}
