@@ -17,7 +17,6 @@ import (
 	"github.com/streamlist/streamlist/internal/archiver"
 	"github.com/streamlist/streamlist/internal/youtube"
 
-	"github.com/Jeffail/gabs"
 	"github.com/disintegration/imaging"
 	"github.com/eduncan911/podcast"
 	"github.com/julienschmidt/httprouter"
