@@ -60,7 +60,8 @@ type response struct {
 	Youtubes []youtube.Video
 
 	ArtistsList []LastFMArtist
-	AlbumsList []LastFMAlbum
+	AlbumsList  []LastFMAlbum
+	TracksList  []LastFMTrack
 }
 
 func stringInSlice(a string, list []string) bool {
@@ -174,14 +175,18 @@ func importHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 func searchHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var artists []LastFMArtist
 	var albums []LastFMAlbum
+	var tracks []LastFMTrack
 	if query := strings.TrimSpace(r.FormValue("q")); query != "" {
 		artists = searchArtists(query)
 		albums = searchAlbums(query)
-        }
+		tracks = searchTracks(query)
+	}
 
 	res := newResponse(r, ps)
+	res.Section = "search"
 	res.ArtistsList = artists
 	res.AlbumsList = albums
+	res.TracksList = tracks
 	html(w, "search.html", res)
 }
 
@@ -644,19 +649,29 @@ func searchArtists(query string) []LastFMArtist {
 	body := getUrl(url)
 
 	var result LastFMArtistsResponse
-        json.Unmarshal([]byte(body), &result)
+	json.Unmarshal([]byte(body), &result)
 
 	return result.Results.ArtistMatches.Artist
 }
 
 func searchAlbums(query string) []LastFMAlbum {
-        url := "http://ws.audioscrobbler.com/2.0/?method=album.search&album=" + query + "&api_key=" + lastfmApiKey + "&format=json"
-        body := getUrl(url)
+	url := "http://ws.audioscrobbler.com/2.0/?method=album.search&album=" + query + "&api_key=" + lastfmApiKey + "&format=json"
+	body := getUrl(url)
 
-        var result LastFMAlbumResponse
-        json.Unmarshal([]byte(body), &result)
+	var result LastFMAlbumResponse
+	json.Unmarshal([]byte(body), &result)
 
-        return result.Results.AlbumMatches.Album
+	return result.Results.AlbumMatches.Album
+}
+
+func searchTracks(query string) []LastFMTrack {
+	url := "http://ws.audioscrobbler.com/2.0/?method=track.search&track=" + query + "&api_key=" + lastfmApiKey + "&format=json"
+	body := getUrl(url)
+
+	var result LastFMTrackResponse
+	json.Unmarshal([]byte(body), &result)
+
+	return result.Results.TrackMatches.Track
 }
 
 func v1LastFMSearchArtist(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -668,10 +683,10 @@ func v1LastFMSearchArtist(w http.ResponseWriter, r *http.Request, ps httprouter.
 
 	var items []SemanticUIResponseItem
 	for _, artist := range result.Results.ArtistMatches.Artist {
-                item := SemanticUIResponseItem{Title: artist.Name, Description: artist.Listeners + " listeners"}
-                items = append(items, item)
-                fmt.Println(artist)
-        }
+		item := SemanticUIResponseItem{Title: artist.Name, Description: artist.Listeners + " listeners"}
+		items = append(items, item)
+		fmt.Println(artist)
+	}
 
 	semUiResp := SemanticUIResponse{Results: items}
 	output, _ := json.Marshal(semUiResp)

@@ -412,22 +412,37 @@ type LastFMArtistsResponse struct {
 
 type LastFMAlbumResponse struct {
 	Results struct {
-                AlbumMatches struct {
-                        Album []LastFMAlbum `json:"album"`
-                }
-        }
+		AlbumMatches struct {
+			Album []LastFMAlbum `json:"album"`
+		}
+	}
+}
+
+type LastFMTrackResponse struct {
+	Results struct {
+		TrackMatches struct {
+			Track []LastFMTrack `json:"track"`
+		}
+	}
+}
+
+type LastFMTrack struct {
+	Name      string        `json:"name"`
+	Artist    string        `json:"artist"`
+	Image     []LastFMImage `json:"image"`
+	Listeners string        `json:"listeners"`
 }
 
 type LastFMAlbum struct {
-        Name  string        `json:"name"`
-        Artist string    `json:"artist"`
-        Image []LastFMImage `json:"image"`
+	Name   string        `json:"name"`
+	Artist string        `json:"artist"`
+	Image  []LastFMImage `json:"image"`
 }
 
 type LastFMArtist struct {
-	Name  string        `json:"name"`
-	Listeners string    `json:"listeners"`
-	Image []LastFMImage `json:"image"`
+	Name      string        `json:"name"`
+	Listeners string        `json:"listeners"`
+	Image     []LastFMImage `json:"image"`
 }
 
 type LastFMImage struct {
