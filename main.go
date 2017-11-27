@@ -241,10 +241,6 @@ func main() {
 
 	// API
 	r.GET(prefix("/v1/status"), log(auth(v1status, "none")))
-	r.GET(prefix("/v1/lastfm/search/artist/:artist"), log(auth(v1LastFMSearchArtist, "admin")))
-	r.GET(prefix("/v1/lastfm/artist/:artist"), log(auth(v1LastFMArtist, "admin")))
-	r.GET(prefix("/v1/lastfm/artist/:artist/similar"), log(auth(v1LastFMArtistSimilar, "admin")))
-	r.GET(prefix("/v1/lastfm/artist/:artist/tags"), log(auth(v1LastFMArtistTags, "admin")))
 
 	// Assets
 	r.GET(prefix("/static/*path"), auth(staticAsset, "none"))

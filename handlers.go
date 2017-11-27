@@ -626,15 +626,6 @@ func getURL(url string) []byte {
 	return body
 }
 
-type semanticUIResponse struct {
-	Results []semanticUIResponseItem `json:"results"`
-}
-
-type semanticUIResponseItem struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-}
-
 func searchArtists(query string) []lastFMArtist {
 	url := "http://ws.audioscrobbler.com/2.0/?method=artist.search&artist=" + query + "&api_key=" + lastfmAPIKey + "&format=json"
 	body := getURL(url)
@@ -663,43 +654,4 @@ func searchTracks(query string) []lastFMTrack {
 	json.Unmarshal([]byte(body), &result)
 
 	return result.Results.TrackMatches.Track
-}
-
-func v1LastFMSearchArtist(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	url := "http://ws.audioscrobbler.com/2.0/?method=artist.search&artist=" + ps.ByName("artist") + "&api_key=" + lastfmAPIKey + "&format=json"
-	body := getURL(url)
-
-	var result lastFMArtistsResponse
-	json.Unmarshal([]byte(body), &result)
-
-	var items []semanticUIResponseItem
-	for _, artist := range result.Results.ArtistMatches.Artist {
-		item := semanticUIResponseItem{Title: artist.Name, Description: artist.Listeners + " listeners"}
-		items = append(items, item)
-		fmt.Println(artist)
-	}
-
-	semUIResp := semanticUIResponse{Results: items}
-	output, _ := json.Marshal(semUIResp)
-	fmt.Fprintf(w, "%s", output)
-}
-
-func v1LastFMArtist(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	url := "http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=" + ps.ByName("artist") + "&api_key=" + lastfmAPIKey + "&format=json"
-	body := getURL(url)
-	fmt.Fprintf(w, "%s", body)
-}
-
-func v1LastFMArtistSimilar(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	url := "http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=" + ps.ByName("artist") + "&api_key=" + lastfmAPIKey + "&format=json"
-	body := getURL(url)
-	jsonParsed, _ := gabs.ParseJSON([]byte(body))
-	fmt.Fprintf(w, jsonParsed.Path("artist.similar.artist.name").String())
-}
-
-func v1LastFMArtistTags(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	url := "http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=" + ps.ByName("artist") + "&api_key=" + lastfmAPIKey + "&format=json"
-	body := getURL(url)
-	jsonParsed, _ := gabs.ParseJSON([]byte(body))
-	fmt.Fprintf(w, jsonParsed.Path("artist.tags.tag.name").String())
 }
