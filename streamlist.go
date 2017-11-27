@@ -402,50 +402,50 @@ func listLists() ([]*List, error) {
 	return lists, db.Error
 }
 
-type LastFMArtistsResponse struct {
+type lastFMArtistsResponse struct {
 	Results struct {
 		ArtistMatches struct {
-			Artist []LastFMArtist `json:"artist"`
+			Artist []lastFMArtist `json:"artist"`
 		}
 	}
 }
 
-type LastFMAlbumResponse struct {
+type lastFMAlbumResponse struct {
 	Results struct {
 		AlbumMatches struct {
-			Album []LastFMAlbum `json:"album"`
+			Album []lastFMAlbum `json:"album"`
 		}
 	}
 }
 
-type LastFMTrackResponse struct {
+type lastFMTrackResponse struct {
 	Results struct {
 		TrackMatches struct {
-			Track []LastFMTrack `json:"track"`
+			Track []lastFMTrack `json:"track"`
 		}
 	}
 }
 
-type LastFMTrack struct {
+type lastFMTrack struct {
 	Name      string        `json:"name"`
 	Artist    string        `json:"artist"`
-	Image     []LastFMImage `json:"image"`
+	Image     []lastFMImage `json:"image"`
 	Listeners string        `json:"listeners"`
 }
 
-type LastFMAlbum struct {
+type lastFMAlbum struct {
 	Name   string        `json:"name"`
 	Artist string        `json:"artist"`
-	Image  []LastFMImage `json:"image"`
+	Image  []lastFMImage `json:"image"`
 }
 
-type LastFMArtist struct {
+type lastFMArtist struct {
 	Name      string        `json:"name"`
 	Listeners string        `json:"listeners"`
-	Image     []LastFMImage `json:"image"`
+	Image     []lastFMImage `json:"image"`
 }
 
-type LastFMImage struct {
+type lastFMImage struct {
 	Text string `json:"#text"`
 	Size string `json:"size"`
 }

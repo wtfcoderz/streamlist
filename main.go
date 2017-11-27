@@ -60,7 +60,7 @@ var (
 	version string
 
 	// others global vars
-	lastfmApiKey string
+	lastfmAPIKey string
 )
 
 func init() {
@@ -76,7 +76,7 @@ func init() {
 	cli.BoolVar(&letsencrypt, "letsencrypt", false, "enable TLS using Let's Encrypt")
 	cli.StringVar(&reverseProxyAuthHeader, "reverse-proxy-header", "X-Authenticated-User", "reverse proxy auth header")
 	cli.StringVar(&reverseProxyAuthIP, "reverse-proxy-ip", "", "reverse proxy auth IP")
-	lastfmApiKey = os.Getenv("LASTFM_API_KEY")
+	lastfmAPIKey = os.Getenv("LASTFM_API_KEY")
 }
 
 func main() {

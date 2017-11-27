@@ -32,6 +32,10 @@
             Results for "{{$query}}"
         </h5>
 
+        {{if not $.LastFMEnabled}}
+          <p>Please set LAST FM Api Key to get results here</p>
+        {{end}}
+
 	<div class="ui three column grid">
 	    <div class="column">
                 <p>Artists</p>

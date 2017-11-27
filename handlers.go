@@ -59,9 +59,10 @@ type response struct {
 
 	Youtubes []youtube.Video
 
-	ArtistsList []LastFMArtist
-	AlbumsList  []LastFMAlbum
-	TracksList  []LastFMTrack
+	LastFMEnabled bool
+	ArtistsList   []lastFMArtist
+	AlbumsList    []lastFMAlbum
+	TracksList    []lastFMTrack
 }
 
 func stringInSlice(a string, list []string) bool {
@@ -81,16 +82,17 @@ func newResponse(r *http.Request, ps httprouter.Params) *response {
 	user, _, _ := r.BasicAuth()
 	isAdmin := stringInSlice(user, httpAdminUsers)
 	return &response{
-		Config:   config.Get(),
-		Request:  r,
-		Params:   &ps,
-		User:     ps.ByName("user"),
-		IsAdmin:  isAdmin,
-		HTTPHost: httpHost,
-		Version:  version,
-		Backlink: backlink,
-		DiskInfo: diskInfo,
-		Archiver: archive,
+		Config:        config.Get(),
+		Request:       r,
+		Params:        &ps,
+		User:          ps.ByName("user"),
+		IsAdmin:       isAdmin,
+		HTTPHost:      httpHost,
+		Version:       version,
+		Backlink:      backlink,
+		DiskInfo:      diskInfo,
+		Archiver:      archive,
+		LastFMEnabled: lastfmAPIKey != "",
 	}
 }
 
@@ -173,9 +175,9 @@ func importHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 }
 
 func searchHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var artists []LastFMArtist
-	var albums []LastFMAlbum
-	var tracks []LastFMTrack
+	var artists []lastFMArtist
+	var albums []lastFMAlbum
+	var tracks []lastFMTrack
 	if query := strings.TrimSpace(r.FormValue("q")); query != "" {
 		artists = searchArtists(query)
 		albums = searchAlbums(query)
@@ -602,7 +604,7 @@ func v1status(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	fmt.Fprintf(w, "%s\n", status)
 }
 
-func getUrl(url string) []byte {
+func getURL(url string) []byte {
 	fmt.Println("I GET:" + url)
 	client := &http.Client{
 		Timeout: time.Second * 2, // Maximum of 2 secs
@@ -624,91 +626,80 @@ func getUrl(url string) []byte {
 	return body
 }
 
-/*type LastFMArtist struct {
-	Name string `json:"name"`
-	Listeners string `json:"listeners"`
-	Image []LastFMImage `json:"image"`
+type semanticUIResponse struct {
+	Results []semanticUIResponseItem `json:"results"`
 }
 
-type LastFMImage struct {
-	Text string `json:"#text"`
-	Size string `json:"size"`
-}*/
-
-type SemanticUIResponse struct {
-	Results []SemanticUIResponseItem `json:"results"`
-}
-
-type SemanticUIResponseItem struct {
+type semanticUIResponseItem struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }
 
-func searchArtists(query string) []LastFMArtist {
-	url := "http://ws.audioscrobbler.com/2.0/?method=artist.search&artist=" + query + "&api_key=" + lastfmApiKey + "&format=json"
-	body := getUrl(url)
+func searchArtists(query string) []lastFMArtist {
+	url := "http://ws.audioscrobbler.com/2.0/?method=artist.search&artist=" + query + "&api_key=" + lastfmAPIKey + "&format=json"
+	body := getURL(url)
 
-	var result LastFMArtistsResponse
+	var result lastFMArtistsResponse
 	json.Unmarshal([]byte(body), &result)
 
 	return result.Results.ArtistMatches.Artist
 }
 
-func searchAlbums(query string) []LastFMAlbum {
-	url := "http://ws.audioscrobbler.com/2.0/?method=album.search&album=" + query + "&api_key=" + lastfmApiKey + "&format=json"
-	body := getUrl(url)
+func searchAlbums(query string) []lastFMAlbum {
+	url := "http://ws.audioscrobbler.com/2.0/?method=album.search&album=" + query + "&api_key=" + lastfmAPIKey + "&format=json"
+	body := getURL(url)
 
-	var result LastFMAlbumResponse
+	var result lastFMAlbumResponse
 	json.Unmarshal([]byte(body), &result)
 
 	return result.Results.AlbumMatches.Album
 }
 
-func searchTracks(query string) []LastFMTrack {
-	url := "http://ws.audioscrobbler.com/2.0/?method=track.search&track=" + query + "&api_key=" + lastfmApiKey + "&format=json"
-	body := getUrl(url)
+func searchTracks(query string) []lastFMTrack {
+	url := "http://ws.audioscrobbler.com/2.0/?method=track.search&track=" + query + "&api_key=" + lastfmAPIKey + "&format=json"
+	body := getURL(url)
 
-	var result LastFMTrackResponse
+	var result lastFMTrackResponse
 	json.Unmarshal([]byte(body), &result)
 
 	return result.Results.TrackMatches.Track
 }
 
 func v1LastFMSearchArtist(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	url := "http://ws.audioscrobbler.com/2.0/?method=artist.search&artist=" + ps.ByName("artist") + "&api_key=" + lastfmApiKey + "&format=json"
-	body := getUrl(url)
+	url := "http://ws.audioscrobbler.com/2.0/?method=artist.search&artist=" + ps.ByName("artist") + "&api_key=" + lastfmAPIKey + "&format=json"
+	body := getURL(url)
 
-	var result LastFMArtistsResponse
+	var result lastFMArtistsResponse
 	json.Unmarshal([]byte(body), &result)
 
-	var items []SemanticUIResponseItem
+	var items []semanticUIResponseItem
 	for _, artist := range result.Results.ArtistMatches.Artist {
-		item := SemanticUIResponseItem{Title: artist.Name, Description: artist.Listeners + " listeners"}
+		item := semanticUIResponseItem{Title: artist.Name, Description: artist.Listeners + " listeners"}
 		items = append(items, item)
 		fmt.Println(artist)
 	}
 
-	semUiResp := SemanticUIResponse{Results: items}
-	output, _ := json.Marshal(semUiResp)
+	semUIResp := semanticUIResponse{Results: items}
+	output, _ := json.Marshal(semUIResp)
 	fmt.Fprintf(w, "%s", output)
 }
 
 func v1LastFMArtist(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	url := "http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=" + ps.ByName("artist") + "&api_key=" + lastfmApiKey + "&format=json"
-	body := getUrl(url)
+	url := "http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=" + ps.ByName("artist") + "&api_key=" + lastfmAPIKey + "&format=json"
+	body := getURL(url)
 	fmt.Fprintf(w, "%s", body)
 }
 
 func v1LastFMArtistSimilar(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	url := "http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=" + ps.ByName("artist") + "&api_key=" + lastfmApiKey + "&format=json"
-	body := getUrl(url)
+	url := "http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=" + ps.ByName("artist") + "&api_key=" + lastfmAPIKey + "&format=json"
+	body := getURL(url)
 	jsonParsed, _ := gabs.ParseJSON([]byte(body))
 	fmt.Fprintf(w, jsonParsed.Path("artist.similar.artist.name").String())
 }
 
 func v1LastFMArtistTags(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	url := "http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=" + ps.ByName("artist") + "&api_key=" + lastfmApiKey + "&format=json"
-	body := getUrl(url)
+	url := "http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist=" + ps.ByName("artist") + "&api_key=" + lastfmAPIKey + "&format=json"
+	body := getURL(url)
 	jsonParsed, _ := gabs.ParseJSON([]byte(body))
 	fmt.Fprintf(w, jsonParsed.Path("artist.tags.tag.name").String())
 }
