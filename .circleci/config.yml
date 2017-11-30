@@ -9,4 +9,27 @@ jobs:
       - run:
           name: Build Docker Image
           command: |
-            docker build -t $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH .
+            tag=$CIRCLE_BRANCH
+            [ -n "$CIRCLE_PR_NUMBER" ] && tag="pr${CIRCLE_PR_NUMBER}"
+            docker build -t $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$tag .
+      - run:
+          name: Push DockerHub
+          command: |
+            if [ -z "$CIRCLE_PR_NUMBER" ]; then
+              echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+              docker push $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH
+            else
+              echo "Pull Request Fork, nothing to do here"
+            fi
+      - run:
+          name: Tag latest
+          command: |
+            echo "tag: $CIRCLE_TAG -- branch: $CIRCLE_BRANCH"
+            if [ -n "$CIRCLE_TAG" ]; then
+              docker pull $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH
+              docker tag $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:latest
+              echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+              docker push $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:latest
+            else
+              echo "Not a tag, nothing to do here"
+            fi
