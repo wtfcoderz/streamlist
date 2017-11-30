@@ -9,7 +9,9 @@ jobs:
       - run:
           name: Build Docker Image
           command: |
-            docker build -t $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$CIRCLE_BRANCH .
+            tag=$CIRCLE_BRANCH
+            [ -n "$CIRCLE_PR_NUMBER" ] && tag="pr${CIRCLE_PR_NUMBER}"
+            docker build -t $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:$tag .
       - run:
           name: Push DockerHub
           command: |
