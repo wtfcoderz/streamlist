@@ -1,19 +1,21 @@
 package main
 
 import (
-	"crypto/sha512"
-	"encoding/hex"
+	//"crypto/sha512"
+	//"encoding/hex"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"html/template"
-	"net"
+	//	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	humanize "github.com/dustin/go-humanize"
 	"github.com/julienschmidt/httprouter"
+	//"github.com/gorilla/securecookie"
 )
 
 /*
@@ -121,61 +123,51 @@ func log(h httprouter.Handle) httprouter.Handle {
 
 func auth(h httprouter.Handle, role string) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		user := ""
 
-		// none role is no auth required
-		if role == "none" {
-			h(w, r, ps)
-			return
-		}
+		//bodyb, _ := ioutil.ReadAll(r.Body)
+		//var quser jsonUser
+		//_ = json.Unmarshal(bodyb, &quser)
 
-		// Method: Basic Auth (if we're not behind a reverse proxy, use basic auth)
-		if httpAdmins != nil {
-			user, password, _ := r.BasicAuth()
-			// Get user in BDD
-			var userBDD User
-			var count int
-			db.Where("username = ?", user).First(&userBDD).Count(&count)
-			// Get Hash password
-			hasher := sha512.New()
-			hasher.Write([]byte(password))
-			if count == 1 && userBDD.Password == hex.EncodeToString(hasher.Sum(nil)) && (userBDD.Role == "admin" || userBDD.Role == role) {
-				ps = append(ps, httprouter.Param{Key: "user", Value: user})
-				h(w, r, ps)
-				return
+		//		var response basicResponse
+
+		// If token, refresh it and send response
+		reqToken := r.Header.Get("X-Streamlist-Token")
+		if reqToken != "" {
+			fmt.Printf("a tokan?")
+			token, err := jwt.Parse(reqToken, func(t *jwt.Token) (interface{}, error) {
+				return []byte(secretKey), nil
+			})
+			if err == nil && token.Valid {
+				fmt.Printf("valid")
+				juser := token.Claims.(jwt.MapClaims)["user"]
+				// Create JWT token
+				token = jwt.New(jwt.GetSigningMethod("HS256"))
+				claims := make(jwt.MapClaims)
+				claims["user"] = juser
+				claims["exp"] = time.Now().Add(time.Minute * 3600).Unix()
+				token.Claims = claims
+				tokenString, err := token.SignedString([]byte(secretKey))
+				if err != nil {
+					panic(err)
+				}
+				w.Header().Set("X-Streamlist-Token", tokenString)
+				//				response = basicResponse{
+				//					Result: "success",
+				//					Msg:    "Feel free to use token",
+				//				}
+
+			} else {
+				fmt.Printf("token invalid")
+				//				response = basicResponse{
+				//					Result: "failure",
+				//					Msg:    "Invalid token",
+				//				}
+				redirect(w, r, "/login")
 			}
-			// Else query for auth
-			w.Header().Set("WWW-Authenticate", `Basic realm="Sign-in Required"`)
-			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			return
 		}
 
-		// Method: Reverse Proxy (if we're behind a reverse proxy, trust it.)
-		clientIP, _, err := net.SplitHostPort(r.RemoteAddr)
-		if err != nil {
-			http.NotFound(w, r)
-			return
-		}
-
-		if clientIP == reverseProxyAuthIP {
-			user = r.Header.Get(reverseProxyAuthHeader)
-		}
-
-		//if user == "" && !optional {
-		if user == "" {
-			logger.Errorf("auth failed: client %q", clientIP)
-			if backlink != "" {
-				http.Redirect(w, r, backlink, http.StatusFound)
-				return
-			}
-			http.NotFound(w, r)
-			return
-		}
-
-		// Add "user" to params.
-		if user != "" {
-			ps = append(ps, httprouter.Param{Key: "user", Value: user})
-		}
+		// Send response
+		//jsonResponse, _ := json.Marshal(response)
 		h(w, r, ps)
 	}
 }

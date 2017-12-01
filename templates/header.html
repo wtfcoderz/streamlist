@@ -18,10 +18,10 @@
         <script src="/streamlist/static/semantic/semantic.min.js"></script>
     </head>
     <body class="site">
-        {{if $.User}}
         <div class="ui fixed inverted menu">
             <div class="ui container">
-                {{if $.Backlink}}
+		{{if $.User}}     
+		{{if $.Backlink}}
                     {{if eq $.Section "play"}}
                         <a class="item" href="/streamlist/"><i class="chevron left icon"></i></a>
                     {{else if eq $.Section "view"}}
@@ -40,14 +40,22 @@
                     Library
                 </a>
                 {{if $.IsAdmin}}
-                  <a class="item {{if eq $.Section "import"}}{{end}}" href="/streamlist/import">
+                <a class="item {{if eq $.Section "import"}}{{end}}" href="/streamlist/import">
                       Import
-                  </a>
-                {{end}}
+                </a>
+		{{end}}
+		<div class="right menu">
+		    <div class="item">
+			<form method="post" action="/logout">
+		            <i class="inverted power icon" type="submit"></i>
+			</form>
+                    </div>
+                </div>
+		{{end}}
             </div>
         </div>
-        {{end}}
 
+	{{if $.User}}     
         <div class="ui main container">
         {{with $message := $.Request.FormValue "message"}}
                 <div class="ui positive message">
@@ -83,4 +91,4 @@
                     </div>
                 </div>
         {{end}}
-
+	{{end}}

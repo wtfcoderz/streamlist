@@ -17,7 +17,10 @@ RUN go get \
     golang.org/x/crypto/acme/autocert \
     github.com/jinzhu/gorm \
     github.com/jinzhu/gorm/dialects/sqlite \
-    github.com/go-sql-driver/mysql
+    github.com/go-sql-driver/mysql \
+    github.com/gorilla/securecookie \
+    github.com/dgrijalva/jwt-go \
+    golang.org/x/crypto/bcrypt
 COPY *.go ./
 COPY internal ./internal
 COPY static ./static

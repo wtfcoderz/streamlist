@@ -1,18 +1,39 @@
 {{template "header.html" .}}
 
-<div class="ui container">
-    <h2 class="ui header">Login</h2>
-
-    <form class="ui small form" action="/streamlist/login" method="POST">
-        <div class="fields">
-            <div class="eight wide field">
-                <input type="text" name="user" placeholder="Username" autofocus="autofocus" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-                <input type="password" name="password" placeholder="Password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-                <button class="ui button" type="submit" value="Login">Login</button>
+<div class="ui main container">
+    <div class="ui container">
+        <div class="ui middle aligned center aligned grid stackable">
+            <div id="login"  class="column">
+        <h2 class="ui image header">
+            <div class="content">
+            Sign-in
             </div>
-        </div>
-    </form>
+        </h2>
+        <form id="signin" action="/streamlist/login" method="POST" class="ui small form">
+            <div class="ui stacked secondary">
+                <div class="field">
+                    <div class="ui left icon input">
+                        <i class="user icon"></i>
+                        <input type="text" id="username" placeholder="Username" autofocus="autofocus" autocomplete="off" autocorrect="off" autocapitalize="off" spelllcheck="false">
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui left icon input">
+                        <i class="lock icon"></i>
+                        <input type="password" id="password" placeholder="Password" autocomplet="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                    </div>
+                </div>
+                <div class="field">
+                    <button class="ui button" type="submit" value="Login">Login</button>
+                </div>
+            </div>
 
+            <div class="ui error message"></div>
+       </form>
+
+        </div>
+    </div>
+   </div>
 </div>
 
 {{template "footer.html" .}}

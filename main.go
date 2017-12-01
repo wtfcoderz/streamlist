@@ -81,6 +81,7 @@ func main() {
 	cli.Parse(os.Args[1:])
 
 	// Create users in db if not exists, or set password and role if needed
+	// Create users in db if not exists, or set password and role if needed
 	for _, httpUser := range httpAdmins {
 		split := strings.Split(httpUser, ":")
 		httpUsername := split[0]
@@ -190,9 +191,12 @@ func main() {
 	r.GET(prefix("/logs"), log(auth(logs, "admin")))
 	r.GET(prefix("/"), log(auth(home, "readonly")))
 
-        // Login
-        r.GET(prefix("/login"), log(auth(loginPage, "none")))
-        r.POST(prefix("/login"), log(auth(login, "none")))
+	// Login
+	r.GET(prefix("/login"), log(auth(loginHandler, "none")))
+	r.POST(prefix("/login"), log(auth(loginHandler, "none")))
+
+	// Logout
+	r.GET(prefix("/logout"), log(auth(logoutHandler, "none")))
 
 	// Library
 	r.GET(prefix("/library"), log(auth(library, "readonly")))

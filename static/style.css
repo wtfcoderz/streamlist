@@ -18,6 +18,10 @@ video {
     flex-direction: column;
 }
 
+#login {
+    max-width: 425px;
+}
+
 .main.container {
     margin-top: 7em;
     flex: 1;

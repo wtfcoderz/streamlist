@@ -2,23 +2,32 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha512"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"github.com/streamlist/streamlist/internal/archiver"
+	"github.com/streamlist/streamlist/internal/youtube"
+	//	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
-	"github.com/streamlist/streamlist/internal/archiver"
-	"github.com/streamlist/streamlist/internal/youtube"
-
+	"github.com/dgrijalva/jwt-go"
 	"github.com/disintegration/imaging"
 	"github.com/eduncan911/podcast"
 	"github.com/julienschmidt/httprouter"
 	"github.com/rylio/ytdl"
 )
 
+type jsonUser struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
 type response struct {
 	Config   Config
 	Request  *http.Request
@@ -54,6 +63,12 @@ type response struct {
 
 	Youtubes []youtube.Video
 }
+type basicResponse struct {
+	Result string `json:"result"`
+	Msg    string `json:"msg"`
+}
+
+const secretKey string = "ThisIsTooSecret"
 
 func stringInSlice(a string, list []string) bool {
 	for _, b := range list {
@@ -83,6 +98,12 @@ func newResponse(r *http.Request, ps httprouter.Params) *response {
 		DiskInfo: diskInfo,
 		Archiver: archive,
 	}
+}
+
+func clearSession(r http.ResponseWriter) {
+	deleteCookie := http.Cookie{Name: "Auth", Value: "none", Expires: time.Now()}
+	http.SetCookie(r, &deleteCookie)
+	return
 }
 
 func logs(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -163,19 +184,119 @@ func importHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params)
 	html(w, "import.html", res)
 }
 
-func loginPage(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	res := newResponse(r, ps)
-	html(w, "login.html", res)
+func loginHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+
+	if r.Method == "GET" {
+		res := newResponse(r, ps)
+		res.Section = "login"
+		html(w, "login.html", res)
+		return
+
+	}
+
+	r.ParseForm()
+	username := r.Form.Get("username")
+
+	password := r.Form.Get("password")
+	fmt.Printf("%+v", r.PostForm)
+	fmt.Println("u :======> " + username)
+	var response basicResponse
+
+	// If token, refresh it and send response
+	reqToken := r.Header.Get("X-Streamlist-Token")
+	if reqToken != "" {
+		fmt.Printf("a tokan?")
+		token, err := jwt.Parse(reqToken, func(t *jwt.Token) (interface{}, error) {
+			return []byte(secretKey), nil
+		})
+		if err == nil && token.Valid {
+			fmt.Printf("valid")
+			juser := token.Claims.(jwt.MapClaims)["user"]
+			// Create JWT token
+			token = jwt.New(jwt.GetSigningMethod("HS256"))
+			claims := make(jwt.MapClaims)
+			claims["user"] = juser
+			claims["exp"] = time.Now().Add(time.Minute * 3600).Unix()
+			token.Claims = claims
+			tokenString, err := token.SignedString([]byte(secretKey))
+			if err != nil {
+				panic(err)
+			}
+			w.Header().Set("X-Streamlist-Token", tokenString)
+			response = basicResponse{
+				Result: "success",
+				Msg:    "Feel free to use token",
+			}
+
+		} else {
+			fmt.Printf("token invalid")
+			response = basicResponse{
+				Result: "failure",
+				Msg:    "Invalid token",
+			}
+			redirect(w, r, "/login")
+		}
+
+	} else {
+		var dbuser User
+		if err := db.Where(&User{Username: username}).First(&dbuser).Error; err != nil {
+			// user doesn't exists
+			response = basicResponse{
+				Result: "failure",
+				Msg:    "Invalid credentials",
+			}
+
+			fmt.Printf("so user bad name : " + username)
+			redirect(w, r, "/login")
+		} else {
+			// user exists, check password
+			hasher := sha512.New()
+			hasher.Write([]byte(password))
+			newHash := hex.EncodeToString(hasher.Sum(nil))
+			if dbuser.Password != newHash {
+				// Bad password
+				fmt.Printf("so user bad pwd " + newHash + " - " + dbuser.Password + " + " + password + " -- " + username + " ")
+				response = basicResponse{
+					Result: "failure",
+					Msg:    "Invalid credentials.",
+				}
+				redirect(w, r, "/login")
+			} else {
+				// Good password
+				fmt.Printf("so user good")
+				// Create JWT token
+				token := jwt.New(jwt.GetSigningMethod("HS256"))
+				claims := make(jwt.MapClaims)
+				claims["user"] = dbuser.Username
+				claims["exp"] = time.Now().Add(time.Minute * 3600).Unix()
+				token.Claims = claims
+				tokenString, err := token.SignedString([]byte(secretKey))
+				if err != nil {
+					panic(err)
+				}
+				w.Header().Set("X-Streamlist-Token", tokenString)
+				expireCookie := time.Now().Add(time.Hour * 1)
+				cookie := http.Cookie{Name: "Auth", Value: tokenString, Expires: expireCookie, HttpOnly: true}
+				http.SetCookie(w, &cookie)
+				fmt.Println("ok")
+				response = basicResponse{
+					Result: "success",
+					Msg:    "Feel free to use token",
+				}
+			}
+		}
+	}
+
+	// Send response
+	jsonResponse, _ := json.Marshal(response)
+	fmt.Fprintln(w, string(jsonResponse))
+
+	redirect(w, r, "/streamlist")
 }
 
-func login(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-        user := r.FormValue("user")
-        password := r.FormValue("password")
-        if user == "admin" && password == "admin" {
-                redirect(w, r, "/")
-        } else {
-                redirect(w, r, "/login")
-        }
+func logoutHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	clearSession(w)
+	html(w, "login.html", 302)
 }
 
 func library(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -480,9 +601,7 @@ func createList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		_error(w, err)
 		return
 	}
-	redirect(w, r, "/library?message=playlistadded")
 }
-
 func removeMediaList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	media, err := FindMedia(ps.ByName("media"))
 	if err != nil {
