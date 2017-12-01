@@ -250,8 +250,14 @@
         $('#player-item-'+id).addClass('active');
         // $player.focus();
 
+				// Set cur time
+				$player[0].currentTime = {{$.DefaultMediaTime}};
+
         // set volume
         $player.prop('volume', {{$.Config.Volume}});
+
+				// Auto Play
+				console.log($player);
     });
 </script>
 
