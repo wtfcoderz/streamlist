@@ -48,10 +48,12 @@ type response struct {
 	// Search
 	Query string
 
-	List   *List
-	Lists  []*List
-	Media  *Media
-	Medias []*Media
+	List             *List
+	Lists            []*List
+	Media            *Media
+	Medias           []*Media
+	DefaultMediaID   int
+	DefaultMediaTime int64
 
 	ActiveMedias []*Media
 	QueuedMedias []*Media
@@ -470,6 +472,23 @@ func playList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var medias []*Media
 	db.Model(&list).Related(&medias, "Medias")
 	res.Medias = medias
+	res.DefaultMediaID = 0
+	res.DefaultMediaTime = 0
+
+	if query := strings.TrimSpace(r.FormValue("m")); query != "" {
+		// Default media ID
+		for k, m := range res.Medias {
+			if m.ID == query {
+				res.DefaultMediaID = k
+			}
+		}
+	}
+
+	if query := strings.TrimSpace(r.FormValue("t")); query != "" {
+		// Default time
+		res.DefaultMediaTime, _ = strconv.ParseInt(query, 10, 64)
+	}
+
 	html(w, "play.html", res)
 }
 

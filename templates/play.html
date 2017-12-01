@@ -243,14 +243,21 @@
 
 
         // set initial item to first one.
-        $player.attr('src', playlist[0]);
-        $player.data('index', 0);
+				var id = {{$.DefaultMediaID}};
+        $player.attr('src', playlist[id]);
+        $player.data('index', id);
         $('.player-item').removeClass('active');
-        $('#player-item-0').addClass('active');
+        $('#player-item-'+id).addClass('active');
         // $player.focus();
+
+				// Set cur time
+				$player[0].currentTime = {{$.DefaultMediaTime}};
 
         // set volume
         $player.prop('volume', {{$.Config.Volume}});
+
+				// Auto Play
+				console.log($player);
     });
 </script>
 
