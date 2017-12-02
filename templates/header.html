@@ -39,7 +39,7 @@
                 <a class="item {{if eq $.Section "library"}}{{end}}" href="/streamlist/library">
                     Library
                 </a>
-                {{if $.IsAdmin}}
+                {{if eq $.IsAdmin "admin"}}
                 <a class="item {{if eq $.Section "import"}}{{end}}" href="/streamlist/import">
                       Import
                 </a>

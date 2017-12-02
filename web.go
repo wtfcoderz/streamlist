@@ -124,50 +124,45 @@ func log(h httprouter.Handle) httprouter.Handle {
 func auth(h httprouter.Handle, role string) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
-		//bodyb, _ := ioutil.ReadAll(r.Body)
-		//var quser jsonUser
-		//_ = json.Unmarshal(bodyb, &quser)
+		juser := ""
 
-		//		var response basicResponse
+		if role == "none" {
+			h(w, r, ps)
+			return
+		}
 
 		// If token, refresh it and send response
-		reqToken := r.Header.Get("X-Streamlist-Token")
-		if reqToken != "" {
-			fmt.Printf("a tokan?")
-			token, err := jwt.Parse(reqToken, func(t *jwt.Token) (interface{}, error) {
+		reqToken, tokErr := r.Cookie("X-Streamlist-Token")
+		if tokErr != http.ErrNoCookie {
+			fmt.Println("a tokan?" + reqToken.Value)
+			token, err := jwt.Parse(reqToken.Value, func(t *jwt.Token) (interface{}, error) {
 				return []byte(secretKey), nil
 			})
 			if err == nil && token.Valid {
-				fmt.Printf("valid")
-				juser := token.Claims.(jwt.MapClaims)["user"]
-				// Create JWT token
-				token = jwt.New(jwt.GetSigningMethod("HS256"))
-				claims := make(jwt.MapClaims)
-				claims["user"] = juser
-				claims["exp"] = time.Now().Add(time.Minute * 3600).Unix()
-				token.Claims = claims
-				tokenString, err := token.SignedString([]byte(secretKey))
-				if err != nil {
-					panic(err)
-				}
-				w.Header().Set("X-Streamlist-Token", tokenString)
-				//				response = basicResponse{
-				//					Result: "success",
-				//					Msg:    "Feel free to use token",
-				//				}
-
+				//		fmt.Printf("valid")
+				juser = token.Claims.(jwt.MapClaims)["user"].(string)
+				fmt.Println(juser)
+				ps = append(ps, httprouter.Param{Key: "user", Value: juser})
+				ps = append(ps, httprouter.Param{Key: "role", Value: "admin"})
+				//		// Create JWT token
+				//		token = jwt.New(jwt.GetSigningMethod("HS256"))
+				//		claims := make(jwt.MapClaims)
+				//		claims["user"] = juser
+				//		claims["exp"] = time.Now().Add(time.Minute * 3600).Unix()
+				//		token.Claims = claims
+				//		tokenString, err := token.SignedString([]byte(secretKey))
+				//		if err != nil {
+				//			panic(err)
+				//		}
+				w.Header().Set("X-Streamlist-Token", "*")
+				fmt.Println("auth - token ok")
 			} else {
 				fmt.Printf("token invalid")
-				//				response = basicResponse{
-				//					Result: "failure",
-				//					Msg:    "Invalid token",
-				//				}
-				redirect(w, r, "/login")
+				redirect(w, r, "/logout")
 			}
+		} else {
+			redirect(w, r, "/logout")
 		}
-
-		// Send response
-		//jsonResponse, _ := json.Marshal(response)
 		h(w, r, ps)
 	}
 }

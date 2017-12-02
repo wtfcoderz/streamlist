@@ -36,4 +36,14 @@
    </div>
 </div>
 
+<script type='text/javascript'>
+    $("#signin").submit(function(event) {
+        event.preventDefault();
+        var $form = $( this ),
+        url = $form.attr( 'action' );
+
+        $.post( url, { user: $('#username').val(), password: $('#password').val() } );
+     });
+</script>
+
 {{template "footer.html" .}}
