@@ -203,26 +203,20 @@ func loginHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 			fmt.Println(juser)
 			ps = append(ps, httprouter.Param{Key: "user", Value: juser})
 			ps = append(ps, httprouter.Param{Key: "role", Value: "admin"})
-			// Create JWT token
-			//token = jwt.New(jwt.GetSigningMethod("HS256"))
-			//claims := make(jwt.MapClaims)
-			//claims["user"] = juser
-			//claims["exp"] = time.Now().Add(time.Minute * 3600).Unix()
-			//token.Claims = claims
-			//tokenString, err := token.SignedString([]byte(secretKey))
-			//if err != nil {
-			//	panic(err)
-			//}
 			w.Header().Set("X-Streamlist-Token", "*")
+			redirect(w, r, "/")
+			return
 		} else {
 			fmt.Printf("token invalid")
 			redirect(w, r, "/logout")
+			return
 		}
 	} else {
 		var dbuser User
 		if err := db.Where(&User{Username: username}).First(&dbuser).Error; err != nil {
 			// user doesn't exists
 			redirect(w, r, "/logout")
+			return
 		} else {
 			// user exists, check password
 			hasher := sha512.New()
@@ -231,6 +225,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 			if dbuser.Password != newHash {
 				// Bad password
 				redirect(w, r, "/logout")
+				return
 			} else {
 				// Good password
 				// Create JWT token
@@ -246,16 +241,14 @@ func loginHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 					panic(err)
 				}
 				w.Header().Set("X-Streamlist-Token", "*")
-				expireCookie := time.Now().Add(time.Hour * 1)
+				expireCookie := time.Now().Add(time.Hour * 8)
 				cookie := http.Cookie{Name: "X-Streamlist-Token", Value: tokenString, Expires: expireCookie, HttpOnly: true}
 				http.SetCookie(w, &cookie)
+				redirect(w, r, "/")
+				return
 			}
 		}
 	}
-
-	// Send response
-	fmt.Println("auth OK : redirected to streamlist")
-	redirect(w, r, "/")
 }
 
 func logoutHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -565,6 +558,8 @@ func createList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		_error(w, err)
 		return
 	}
+	redirect(w, r, "/library?message=playlistadded")
+
 }
 func removeMediaList(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	media, err := FindMedia(ps.ByName("media"))

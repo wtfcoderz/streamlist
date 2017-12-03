@@ -187,7 +187,7 @@ func main() {
 	r.HandleMethodNotAllowed = false
 
 	// Handlers
-	r.GET("/", log(auth(index, "readonly")))
+	r.GET("/", log(auth(index, "admin")))
 	r.GET(prefix("/logs"), log(auth(logs, "admin")))
 	r.GET(prefix("/"), log(auth(home, "readonly")))
 
