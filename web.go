@@ -139,12 +139,10 @@ func auth(h httprouter.Handle, role string) httprouter.Handle {
 			})
 			if err == nil && token.Valid {
 				juser = token.Claims.(jwt.MapClaims)["user"].(string)
-				fmt.Println(juser)
 				ps = append(ps, httprouter.Param{Key: "user", Value: juser})
 				ps = append(ps, httprouter.Param{Key: "role", Value: "admin"})
 				w.Header().Set("X-Streamlist-Token", "*")
 			} else {
-				fmt.Printf("token invalid")
 				redirect(w, r, "/logout")
 			}
 		} else {

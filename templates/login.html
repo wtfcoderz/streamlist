@@ -14,17 +14,17 @@
                 <div class="field">
                     <div class="ui left icon input">
                         <i class="user icon"></i>
-                        <input type="text" id="username" placeholder="Username" autofocus="autofocus" autocomplete="off" autocorrect="off" autocapitalize="off" spelllcheck="false">
+                        <input type="text" name="username" placeholder="Username" autofocus="autofocus" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                     </div>
                 </div>
                 <div class="field">
                     <div class="ui left icon input">
                         <i class="lock icon"></i>
-                        <input type="password" id="password" placeholder="Password" autocomplet="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                        <input type="password" name="password" placeholder="Password" autocomplet="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                     </div>
                 </div>
                 <div class="field">
-                    <button class="ui button" type="submit" value="Login">Login</button>
+                    <input class="ui button" type="submit" value="Login" />
                 </div>
             </div>
 
@@ -35,15 +35,5 @@
     </div>
    </div>
 </div>
-
-<script type='text/javascript'>
-    $("#signin").submit(function(event) {
-        event.preventDefault();
-        var $form = $( this ),
-        url = $form.attr( 'action' );
-
-        $.post( url, { user: $('#username').val(), password: $('#password').val() } );
-     });
-</script>
 
 {{template "footer.html" .}}

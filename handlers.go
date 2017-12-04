@@ -77,8 +77,6 @@ func newResponse(r *http.Request, ps httprouter.Params) *response {
 	if err != nil {
 		panic(err)
 	}
-	//user, _, _ := r.BasicAuth()
-	//isAdmin := stringInSlice(user, httpAdminUsers)
 	return &response{
 		Config:   config.Get(),
 		Request:  r,
@@ -188,9 +186,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 	}
 
 	var juser string
-	r.ParseForm()
-	username := r.Form.Get("username")
-	password := r.Form.Get("password")
+	username := r.FormValue("username")
+	password := r.FormValue("password")
 
 	// If token, refresh it and send response
 	reqToken, tokErr := r.Cookie("X-Streamlist-Token")
@@ -200,14 +197,12 @@ func loginHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) 
 		})
 		if err == nil && token.Valid {
 			juser = token.Claims.(jwt.MapClaims)["user"].(string)
-			fmt.Println(juser)
 			ps = append(ps, httprouter.Param{Key: "user", Value: juser})
 			ps = append(ps, httprouter.Param{Key: "role", Value: "admin"})
 			w.Header().Set("X-Streamlist-Token", "*")
 			redirect(w, r, "/")
 			return
 		} else {
-			fmt.Printf("token invalid")
 			redirect(w, r, "/logout")
 			return
 		}
